@@ -2,7 +2,7 @@
 
 // PUGs Constants
 
-namespace Pugs;
+namespace Pugs\Main\Const;
 
 /* API/Admin keys and access */
 const ACCESS_KEY    = "V5RVWmt4qRjZ3tQfuJZ7Rju9kYW8N6zM";
