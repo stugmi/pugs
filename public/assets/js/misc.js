@@ -11,7 +11,7 @@ $("#search-player").on("keyup", function() {
 
 $("#ListAll").on("click", function() {
   var b = $("#ListAll").is(":checked") ? 0 : 1,
-    var c = $("#search-player").val();
+    c = $("#search-player").val();
   $("#leaderboard").load(leaderboard, {
     full: b,
     player: c
