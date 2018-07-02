@@ -1,6 +1,6 @@
 <?php
 // PUGS Database CLASS
-namespace Pugs;
+namespace Pugs\DB;
 
 use PDO;
 
@@ -56,7 +56,7 @@ use PDO;
       * @return string  Return leaderboard
       */
       private $resp;
-      private $rank;
+      private $mode;
       public function getBoard($mode)
       {
           if (is_array($mode)) {
@@ -70,13 +70,24 @@ use PDO;
                   "WHERE (wins+losses+draws) > 0 ORDER by `rating` DESC LIMIT 10"
               );
               break;
-              case "most-played":
+              case "most-games":
               $do = $this->conn->prepare(
                   "SELECT $col FROM `Main` m, (SELECT @curRank := 0) r ".
-                  "WHERE (wins+losses+draws) > 0 ORDER by (wins+losses+draws)"
+                  "WHERE (wins+losses+draws) > 0 ORDER by (wins+losses+draws) DESC"
               );
               break;
-              default:
+              case "all":
+              $do = $this->conn->prepare(
+                  "SELECT $col FROM `Main` m, (SELECT @curRank := 0) r ".
+                  "ORDER by `rating` DESC"
+              );
+              // no break
+              case "no-games":
+              $do = $this->conn->prepare(
+                  "SELECT $col FROM `Main` m, (SELECT @curRank := 0) r ".
+                  "WHERE (wins+losses+draws) = 0 ORDER by `rating` DESC"
+              );
+              break;              default:
               $do = $this->conn->prepare(
                   "SELECT $col FROM `Main` m, (SELECT @curRank := 0) r ".
                   "WHERE (wins+losses+draws) > 0 ORDER by `rating` DESC"
@@ -85,9 +96,12 @@ use PDO;
           $do->execute();
 
           foreach ($do->fetchAll(PDO::FETCH_ASSOC) as $row) {
-              $rank += 1;
               $total   = $row["wins"] + $row["losses"] + $row["draws"];
-              $winrate = round(100 * $row["wins"] / ($total), 1);
+              if ($total) {
+                  $winrate = round(100 * $row["wins"] / ($total), 1);
+              } else {
+                  $winrate = 0;
+              }
               $winrate = (is_nan($winrate) ? 0 : $winrate);
               $this->resp .= "<tr>";
               $this->resp .= "\t<th scope=\"row\">#".$row["rank"]."</th>";
