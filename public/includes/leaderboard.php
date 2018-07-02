@@ -2,7 +2,7 @@
 
 use Pugs\Database as DB;
 
-require_once "../internal/classes/database.php";
+require_once "../../internal/classes/database.php";
 $db = new DB("dev");
 
 ?>

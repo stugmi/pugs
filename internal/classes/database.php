@@ -14,8 +14,8 @@ use PDO;
 
       public function __construct($ENV)
       {
-          if (file_exists('main.php')) {
-            include_once 'main.php';
+          if (file_exists(__dir__.'/main.php')) {
+            include_once __dir__.'/main.php';
           } else {
             include_once '/opt/includes/main.php';
           }

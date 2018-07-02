@@ -1,4 +1,4 @@
-var leaderboard = "leaderboard.php";
+var leaderboard = "includes/leaderboard.php";
 
 $("#leaderboard").load(leaderboard)
 
