@@ -14,9 +14,9 @@ use PDO;
 
       public function __construct($ENV)
       {
-          try {
+          if (file_exists('main.php')) {
             include_once 'main.php';
-          } catch(Exception $e) {
+          } else {
             include_once '/opt/includes/main.php';
           }
           $this->user = JAYNE_DB_USER;
