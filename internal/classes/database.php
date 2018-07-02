@@ -1,6 +1,6 @@
 <?php
 // PUGS Database CLASS
-namespace Pugs\DB;
+namespace Pugs;
 
 use PDO;
 

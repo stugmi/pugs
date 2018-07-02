@@ -1,5 +1,4 @@
 <?php
-
 use Pugs\Database as DB;
 
 require_once "../../internal/classes/database.php";
