@@ -16,7 +16,7 @@ use PDO;
       {
           try {
             include_once 'main.php';
-          } catch(FilesystemIterator $e) {
+          } catch(Exception $e) {
             include_once '/opt/includes/main.php';
           }
           $this->user = JAYNE_DB_USER;
