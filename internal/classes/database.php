@@ -3,6 +3,7 @@
 namespace Pugs;
 
 use PDO;
+
 {
   class Database
   {
@@ -15,9 +16,9 @@ use PDO;
       public function __construct($ENV)
       {
           if (file_exists(__dir__.'/main.php')) {
-            include_once __dir__.'/main.php';
+              include_once __dir__.'/main.php';
           } else {
-            include_once '/opt/includes/main.php';
+              include_once '/opt/includes/main.php';
           }
           $this->user = JAYNE_DB_USER;
           $this->pass = JAYNE_DB_PASS;
@@ -51,14 +52,18 @@ use PDO;
       /**
       * Returns leaderboard under spesificed conditions
       *
-      * @param string  $mode  Returns the leaderboard under spesific scenarios
+      * @param string   $mode  Returns the leaderboard under spesific scenarios
       * @return string  Return leaderboard
       */
-      public function getLeaderboard($mode)
+      private $resp;
+      private $rank;
+      public function getBoard($mode)
       {
-      	$this->mode = $mode;
+          if (is_array($mode)) {
+              die("N0 4RR4Y5! :PpppPppPp $ $ $ bl1ng bl1ng");
+          }
           $col = "@curRank := @curRank + 1 AS rank, name, rating, wins, losses, draws";
-          switch ($this->mode) {
+          switch ($mode) {
               case "top10":
               $do = $this->conn->prepare(
                   "SELECT $col FROM `Main` m, (SELECT @curRank := 0) r ".
@@ -77,26 +82,9 @@ use PDO;
                   "WHERE (wins+losses+draws) > 0 ORDER by `rating` DESC"
               );
           }
-
-          /*
-          if ($this->top10) {
-          $col = "@curRank := @curRank + 1 AS rank, name, rating, wins, losses, draws";
-          $do = $this->conn->prepare(
-          "SELECT $col FROM `Main` m, (SELECT @curRank := 0) r ".
-          "WHERE (wins+losses+draws) > 0 ORDER by `rating` DESC LIMIT 10"
-          );
-          } else {
-          $col = "@curRank := @curRank + 1 AS rank, name, rating, wins, losses, draws";
-          $do = $this->conn->prepare(
-          "SELECT $col FROM `Main` m, (SELECT @curRank := 0) r ".
-          "WHERE (wins+losses+draws) > 0 ORDER by `rating` DESC"
-          );
-          */
-
           $do->execute();
-          $rank = 0;
-          $this->resp = "";
-          while ($row = $do->fetch(PDO::FETCH_ASSOC)) {
+
+          foreach ($do->fetchAll(PDO::FETCH_ASSOC) as $row) {
               $rank += 1;
               $total   = $row["wins"] + $row["losses"] + $row["draws"];
               $winrate = round(100 * $row["wins"] / ($total), 1);
