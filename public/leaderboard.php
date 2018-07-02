@@ -1,8 +1,9 @@
 <?php
 
+use Pugs\Database as DB;
 
-require_once "../internal/classes/database.class.php";
-$test_connection = new Database("dev");
+require_once "../internal/classes/database.php";
+$db = new DB("dev");
 
 ?>
 <!DOCTYPE html>
@@ -11,7 +12,7 @@ $test_connection = new Database("dev");
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.min.css"/>
-        <link rel="stylesheet" type="text/css" href="css/leaderboard.css">
+        <link rel="stylesheet" type="text/css" href="assets/css/leaderboard.css">
     </head>
     <body>
         <table class="leaderboard table table-sm table-hover">
@@ -28,7 +29,7 @@ $test_connection = new Database("dev");
                 </tr>
             </thead>
             <tbody>
-                <?php 
+                <?php
                 foreach ($_REQUEST as $param) {
                     if (is_array($param)) {
                         die("N0 4RR4Y5! :PpppPppPp $ $ $ bl1ng bl1ng");
@@ -36,7 +37,7 @@ $test_connection = new Database("dev");
                 }
                 $player = $_REQUEST['player'] ?? null;
                 $full = $_REQUEST['full'] ?? null;
-                echo $test_connection->getLeaderboard($full, $player); 
+                echo $db->getLeaderboard($full, $player);
                 ?>
             </tbody>
         </table>
