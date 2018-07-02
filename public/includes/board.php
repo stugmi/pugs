@@ -24,7 +24,7 @@ $db = new DB("dev");
                     <th>Losses</th>
                     <th>Draws</th>
                     <th>Winrate</th>
-                    <th>Total Games</th>
+                    <th>Games</th>
                 </tr>
             </thead>
             <tbody>

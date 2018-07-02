@@ -7,13 +7,21 @@ use PDO;
 {
   class Database
   {
-      public $conn;
-      public $db;
-      private $user;
-      private $pass;
-      private $host;
 
-      public function __construct($ENV)
+    public $conn;
+    private $db;
+    private $user;
+    private $pass;
+    private $host;
+    private $resp;
+
+    /**
+    * This is run each time the class is called.
+    *
+    * @param  string   $ENV  Define which database is being used
+    * @return void
+    */
+      public function __construct(string $ENV)
       {
           if (file_exists(__dir__.'/main.php')) {
               include_once __dir__.'/main.php';
@@ -32,6 +40,8 @@ use PDO;
               case "live":
               $this->db = JAYNE_DB_LIVE;
               break;
+            default:
+              $this->db = JAYNE_DB_DEV;
           }
 
           try {
@@ -49,19 +59,23 @@ use PDO;
           }
       }
 
-      /**
+     /**
       * Returns leaderboard under spesificed conditions
       *
-      * @param string   $mode  Returns the leaderboard under spesific scenarios
-      * @return string  Return leaderboard
+      * @param  string    $mode  What method to select users from.
+      * @return string    Return leaderboard
       */
-      private $resp;
-      private $mode;
-      public function getBoard($mode)
+      public function getBoard($mode): string
       {
+          // People can abuse the fact that $_REQUEST (GET/POST) parameters
+          // accept arrays if you pass them as param[]=foobar
+          // This can often cause unwanted results such as information leak.
           if (is_array($mode)) {
               die("N0 4RR4Y5! :PpppPppPp $ $ $ bl1ng bl1ng");
           }
+
+
+          // Neat select trick to sort out rankings, don't remove the select inside.
           $col = "@curRank := @curRank + 1 AS rank, name, rating, wins, losses, draws";
           switch ($mode) {
               case "top10":
@@ -94,13 +108,10 @@ use PDO;
               );
           }
           $do->execute();
-
           foreach ($do->fetchAll(PDO::FETCH_ASSOC) as $row) {
               $total   = $row["wins"] + $row["losses"] + $row["draws"];
-              if ($total) {
-                  $winrate = round(100 * $row["wins"] / ($total), 1);
-              } else {
-                  $winrate = 0;
+              if ($total) { // To avoid warnings, let me know if there is a better looking one.
+                  $winrate = round(100 * $row["wins"] / ($total), 1); // if $total = 0
               }
               $winrate = (is_nan($winrate) ? 0 : $winrate);
               $this->resp .= "<tr>";
@@ -116,5 +127,81 @@ use PDO;
           }
           return $this->resp;
       }
+
+      /**
+       * Used for login if we ever need it. Panel is in work.
+       * @param string $username
+       * @param string $password
+       * @return bool
+       */
+      public function userRegister(string $username, string $password): bool
+      {
+
+        // To check if the user exist
+        $do =
+          $this->conn->prepare("SELECT username FROM Users WHERE username = (:username)");
+        $do->bindParam(":username", $username);
+        $do->execute();
+        $result = $do->fetch();
+
+        // If the user already exists we just return FALSE so the program knows
+        if ($result['username'] == $username) {
+            return FALSE;
+        }
+
+        // If everything else is fine, we'll create the user
+        // Passwords HAVE to be stored with a secure password hashing method. [1]
+        // [1] https://en.wikipedia.org/wiki/Bcrypt
+        $do = $this->conn->prepare(
+          "INSERT INTO Users (username, password, signup_date)".
+          "VALUES (:username, :password, NOW())"
+        );
+        $hased_password = password_hash($password, PASSWORD_BCRYPT);
+        $do->bindParam(":username", $username);
+        $do->bindParam(":password", $hased_password);
+        $do->execute();
+        return TRUE;
+      }
+
+      /**
+       * Used for login if we ever need it. Panel is in work.
+       * 0 = Wrong password
+       * 1 = Success
+       * 2 = Not found
+       * 3 = Banned
+       * @param string $username
+       * @param string $password
+       * @return int
+       */
+      public function userLogin(string $username, string $password): int
+      {
+
+        $do =
+          $this->conn->prepare("SELECT * FROM users WHERE username = (:username)");
+        $do->bindParam(":username", $username);
+        $do->execute();
+        $result = $do->fetch();
+
+        // User isnt registered
+        if (empty($result['username'])){
+          return 2;
+        }
+
+        // Password matches, user logged in.
+        if (password_verify($password, $result['password'])) {
+          return 1;
+        }
+
+        // Banned
+        if($result['banned']){
+          return 3;
+        }
+        // Wrong password
+        return 0;
+
+
+      }
+
+
   }
 }
